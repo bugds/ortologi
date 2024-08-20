@@ -1,4 +1,4 @@
-# A tool for COG
+# ortologi
 The database installation process is outlined in the cogcreatedb.ipynb file.
 
 Dependencies (database creation):
