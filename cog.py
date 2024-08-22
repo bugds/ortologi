@@ -19,7 +19,7 @@ from pyvis.network import Network
 parser = argparse.ArgumentParser()
 parser.add_argument(
     'input', type=str,
-    help = "Input directory (separate files with RefSeq identifier in each)")
+    help = "Input file with RefSeq identifier of a target")
 parser.add_argument(
     'output', type=str,
     help = "Output directory")
