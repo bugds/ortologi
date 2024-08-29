@@ -186,6 +186,28 @@ def createInputForBlast(inp, filename):
             f.write('\n'.join(inp))
     return '{}/Temp/{}{}'.format(rootFolder, filename, '.q')
 
+def checkAccession(
+    query
+):
+    '''Check if accession number is in database
+    :param query: accession number
+    :return: False if failed, True if succeded
+    '''
+    with open(query, 'r') as inp:
+        entry = inp.readline().strip()
+
+    searchResult = subprocess.run(
+        [blastdbcmd,
+        '-entry', entry,
+        '-db', databaseName],
+        stderr = subprocess.PIPE,
+        stdout=subprocess.DEVNULL
+    )
+
+    if 'not found' in searchResult.stderr.decode():
+        return False
+    return True
+
 def bashBlast(
     query, 
     out, 
@@ -200,6 +222,9 @@ def bashBlast(
     :max_target_seqs: Number of target sequences
     :return: False if failed, True if succeded
     '''
+    if checkAccession(query) == False:
+        return False
+
     blastProcess = subprocess.run(
         [path2blastp,
         '-db', databaseName,
@@ -210,9 +235,9 @@ def bashBlast(
         '-max_target_seqs', max_target_seqs],
         stderr = subprocess.PIPE
     )
-    if 'Sequence ID not found' in blastProcess.stderr.decode():
+    
+    if blastProcess.stderr.decode():
         print(blastProcess.stderr.decode())
-        exit(1)
         return False
     return True
 
@@ -225,11 +250,13 @@ def initialBlast(filename, query):
     '''
     query = createInputForBlast(query, filename)
     xmlPath = os.path.join(rootFolder, 'Blast_XML', os.path.splitext(filename)[0] + '.xml')
-    bashBlast(
+    bashBlastBool = bashBlast(
         query=query, 
         out=xmlPath,
         max_target_seqs=initBlastTargets
     )
+    if not bashBlastBool:
+        exit(1)
     return SearchIO.parse(xmlPath, 'blast-xml')
 
 def parseInitialBlast(blast):
