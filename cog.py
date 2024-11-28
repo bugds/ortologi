@@ -209,10 +209,10 @@ def checkAccession(
     return True
 
 def bashBlast(
-    query, 
-    out, 
-    outfmt='5', 
-    num_threads=numThreads, 
+    query,
+    out,
+    outfmt='5',
+    num_threads=numThreads,
     max_target_seqs='500'):
     '''Run Blastp search
     :param query: File with query accession number
@@ -235,7 +235,7 @@ def bashBlast(
         '-max_target_seqs', max_target_seqs],
         stderr = subprocess.PIPE
     )
-    
+
     if blastProcess.stderr.decode():
         print(blastProcess.stderr.decode())
         return False
@@ -251,7 +251,7 @@ def initialBlast(filename, query):
     query = createInputForBlast(query, filename)
     xmlPath = os.path.join(rootFolder, 'Blast_XML', os.path.splitext(filename)[0] + '.xml')
     bashBlastBool = bashBlast(
-        query=query, 
+        query=query,
         out=xmlPath,
         max_target_seqs=initBlastTargets
     )
@@ -272,7 +272,7 @@ def parseInitialBlast(blast):
                 alnSpan = int(hsp.query_span)
                 qCover = float("{0:.2f}".format(alnSpan/queryLen))
                 if (qCover > qCoverLimit) and (hsp.evalue < evalueLimit):
-                    # can't just take hit.accession - 
+                    # can't just take hit.accession -
                     # does not have accession version
                     substrings = hit.id.split('|')
                     for i in range(len(substrings)):
@@ -327,9 +327,9 @@ def parseG2RHeader(header):
     :return: Dictionary of column numbers
     '''
     return {
-            't':header.index('#tax_id'), 
-            'g':header.index('GeneID') , 
-            'p':header.index('protein_accession.version') , 
+            't':header.index('#tax_id'),
+            'g':header.index('GeneID') ,
+            'p':header.index('protein_accession.version') ,
             's':header.index('Symbol')
         }
 
@@ -347,9 +347,9 @@ def saveTempSet(toSave, tempSet, proteins, index):
             if l.split('\t')[index['p']] != '-':
                 proteins[l.split('\t')[index['p']]] = ProteinClass(
                     None,
-                    l.split('\t')[index['t']], 
+                    l.split('\t')[index['t']],
                     l.split('\t')[index['s']],
-                    l.split('\t')[index['g']], 
+                    l.split('\t')[index['g']],
                     l.split('\t')[index['p']]
                 )
     return proteins
@@ -414,7 +414,7 @@ def writeInBlastDict(blast, blastDict):
                     if substrings[i] == 'ref':
                         blastDict[record.id][species] = substrings[i+1]
     return blastDict
-    
+
 def blastSearch(query, speciesList, filename, blastDict):
     '''Run Blast, save results of a search to a file and return its contents
     :param query: String with accession numbers divided by paragraphs
@@ -503,7 +503,7 @@ def createBlastDict(proteins, filename):
     savePickle(os.path.splitext(filename)[0], \
         {'proteins':proteins, 'blastDict':blastDict}, 'For_online')
 
-    print('Checking Blast dictionary...') 
+    print('Checking Blast dictionary...')
     blastDict = checkBlastDict(proteins, filename, blastDict, 0)
     print(str(datetime.datetime.now()) + ': Blast dictionary checked')
     savePickle(os.path.splitext(filename)[0], \
@@ -713,7 +713,10 @@ def createGraph(mainGene, mainSpecies, proteins, geneDict):
             if (tSpecies in geneDict[q]) and (qSpecies in geneDict[t]):
                 if (q != t) and (geneDict[q][tSpecies] == t) and (geneDict[t][qSpecies] == q):
                     graph.add_edge(q, t)
-    graph.remove_nodes_from(list(networkx.isolates(graph)))
+    if networkx.is_isolate(graph, mainGene):
+        print('Main gene is an isolate!!!')
+    else:
+        graph.remove_nodes_from(list(networkx.isolates(graph)))
     maxCliques = findLargestMaxCliques(graph, mainGene)
     return graph, maxCliques
 
@@ -726,9 +729,9 @@ def markovClustering(graph):
     return markov_clustering.get_clusters(markov_clustering.run_mcl(matrix))
 
 def drawGraph(
-    graph, 
+    graph,
     maxCliques,
-    proteins, 
+    proteins,
     filename,
     mainSpecies,
     springLength = 100,
@@ -871,7 +874,7 @@ def changeVisJS(filename):
           background-color: rgb(0,0,0); /* Fallback color */
           background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
         }
-        
+
         /* Modal Content */
         .modal-content {
           background-color: #fefefe;
@@ -889,7 +892,7 @@ def changeVisJS(filename):
           box-sizing: border-box;
           margin: 0px;
         }
-        
+
         /* The Close Button */
         .close {
           color: #aaaaaa;
@@ -898,7 +901,7 @@ def changeVisJS(filename):
           font-weight: bold;
           position: fixed;
         }
-        
+
         .close:hover,
         .close:focus {
           color: #000;
@@ -927,11 +930,11 @@ def changeVisJS(filename):
             }
             addSelected();
         };
-        
+
         network.on('dragStart', function() {
             clickEvent();
         });
-        
+
         network.on('click', function() {
             clickEvent();
         });
@@ -955,7 +958,7 @@ def changeVisJS(filename):
     for (var i = 0; i < ids.length; i++) {
         labelIdDict[nodes.get(ids[i]).label] = ids[i];
     };
-    
+
     function describe() {
         options = {
             fields: ['id', 'label', 'markov'],
@@ -1027,7 +1030,7 @@ def changeVisJS(filename):
             document.getElementById('markovDesc').innerHTML = 'N/A'
         }
     }
-    
+
     function searchGraph() {
         var searchedValue = document.getElementById('query').value;
         var searchedItems = nodes.get({
@@ -1053,8 +1056,8 @@ def changeVisJS(filename):
         }
         addSelected();
     };
-    
-    function changeColors() {        
+
+    function changeColors() {
         if (document.getElementById("markov").checked) {
             allNodes = nodes.get({
                 fields: ['id', 'color', 'color1']
@@ -1137,7 +1140,7 @@ def changeVisJS(filename):
         nodes.update(groupNodes);
         previouslySelected = [...new Set(previouslySelected.concat(groupNodes))]
     };
-    
+
     function addSelected() {
         var newLine = "\\r\\n";
         var selectedNodes = nodes.get(network.getSelectedNodes());
@@ -1147,7 +1150,7 @@ def changeVisJS(filename):
         }
         document.getElementById("editNodes").value = selectedLabels.trim();
     }
-    
+
     function hide() {
         var editLabels = document.getElementById("editNodes").value.split("\\n");
         var editIds = [];
@@ -1178,7 +1181,7 @@ def changeVisJS(filename):
             edges.update(editEdges);
         }
     };
-    
+
     function reveal() {
         var editLabels = document.getElementById("editNodes").value.split("\\n");
         var editIds = [];
@@ -1393,7 +1396,7 @@ def changeVisJS(filename):
             document.getElementById("clustalStatus").innerHTML = "Status: ERROR";
         }
     }
-    
+
     function closeModal(elemId) {
         document.getElementById(elemId).style.display = "none";
     };
@@ -1580,7 +1583,7 @@ def clearProteins2(proteins):
             if p.species in refDict:
                 if refDict[p.species] != p.gene:
                     print('Multiple genes of ' + p.species + ' are good')
-            refDict[p.species] = p.gene                
+            refDict[p.species] = p.gene
     toDel = set()
     for p in proteins.values():
         if (p.species in refDict.keys()) and (p.gene != refDict[p.species]):
@@ -1783,7 +1786,7 @@ def runFinalAnalysis():
             if k.split('.')[0] == mainRefseq:
                 mainRefseq = k
         mainSpecies = proteins[mainRefseq].species
-        mainGene = proteins[mainRefseq].gene 
+        mainGene = proteins[mainRefseq].gene
         graph, maxCliques = createGraph(mainGene, mainSpecies, proteins, geneDict)
         drawGraph(graph, maxCliques, proteins, filename, mainSpecies)
         changeVisJS(filename)
