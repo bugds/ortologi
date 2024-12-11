@@ -912,6 +912,17 @@ def changeVisJS(filename):
 ''')
             if 'return network;' in l:
                 f.write('''
+        physics.addEventListener("click", controlPhysics);
+
+        function controlPhysics() {
+            if (physics.checked) {
+                network.setOptions( { physics: true } );
+            }
+            else {
+                network.setOptions( { physics: false } );
+            }
+        }
+
         function clickEvent() {
             var options = {
                 fields: ['id', 'font']
@@ -1478,6 +1489,12 @@ def changeVisJS(filename):
         <label for="markov">Markov clustering</label>
         <br>
         <button id="colorChange" onclick="return changeColors()">Change colors</button>
+        </p>
+      </div>
+      <div>
+        <p>
+        <input type="checkbox" id="physics" name="physics" checked />
+        <label for="physics">Physics</label>
         </p>
       </div>
     </td>
