@@ -674,9 +674,9 @@ def createFastasForTrees(proteins, greatIso, filename):
             if l.startswith('>'):
                 r = l.split()[0][1:]
                 if len(proteins[r].symbol) > 0:
-                    l = '>' + proteins[r].species + '_' + proteins[r].symbol + '\n'
+                    l = '>' + proteins[r].species + '_' + proteins[r].symbol + '_(' + proteins[r].refseq + ')' + '\n'
                 else:
-                    l = '>' + proteins[r].species + '_' + 'GeneID' + str(proteins[r].gene) + '\n'
+                    l = '>' + proteins[r].species + '_' + 'GeneID' + str(proteins[r].gene)  + '_(' + proteins[r].refseq + ')' + '\n'
                 l = l.replace(' ', '_')
             o.write(l)
 
@@ -694,7 +694,7 @@ def findLargestMaxCliques(graph, mainGene):
                 maxCliques.append(c)
     return maxCliques
 
-def createGraph(mainGene, mainSpecies, proteins, geneDict):
+def createGraph(mainGene, mainSpecies, proteins, geneDict, filename):
     '''Create graph
     :param mainGene: Gene of query
     :param mainSpecies: Species of query
@@ -718,6 +718,25 @@ def createGraph(mainGene, mainSpecies, proteins, geneDict):
     else:
         graph.remove_nodes_from(list(networkx.isolates(graph)))
     maxCliques = findLargestMaxCliques(graph, mainGene)
+    oneMaxClique = set(p for p in proteins.values() if p.gene in set().union(*maxCliques))
+    with open(os.path.join(rootFolder, 'Results', os.path.splitext(filename)[0] + '.fasta'), 'r') as inp:
+        fastalines = inp.readlines()
+        fastaDict = dict()
+        for l in fastalines:
+            if l.startswith('>'):
+                k = l
+                fastaDict[k] = ''
+            else:
+                fastaDict[k] += l
+    with open(os.path.join(rootFolder, 'Results', os.path.splitext('max_clique')[0] + '.fasta'), 'w') as o:
+        for p in oneMaxClique:
+            if len(p.symbol) > 0:
+                k = '>' + p.species + '_' + p.symbol + '_(' + p.refseq + ')' + '\n'
+            else:
+                k = '>' + p.species + '_' + 'GeneID' + str(p.gene)  + '_(' + p.refseq + ')' + '\n'
+            k = k.replace(' ', '_')
+            if k in fastaDict:
+                o.write(k + fastaDict[k])
     return graph, maxCliques
 
 def markovClustering(graph):
@@ -1806,7 +1825,7 @@ def runFinalAnalysis():
                 mainRefseq = k
         mainSpecies = proteins[mainRefseq].species
         mainGene = proteins[mainRefseq].gene
-        graph, maxCliques = createGraph(mainGene, mainSpecies, proteins, geneDict)
+        graph, maxCliques = createGraph(mainGene, mainSpecies, proteins, geneDict, filename)
         drawGraph(graph, maxCliques, proteins, filename, mainSpecies)
         changeVisJS(filename)
         maxCliques.sort()
