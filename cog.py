@@ -912,6 +912,8 @@ def changeVisJS(filename):
 ''')
             if 'return network;' in l:
                 f.write('''
+        physics = document.getElementById('physics')
+
         physics.addEventListener("click", controlPhysics);
 
         function controlPhysics() {
