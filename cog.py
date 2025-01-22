@@ -655,6 +655,14 @@ def createDictsForAnalysis(proteins, blastDict):
                     geneDict[g][s] = maxKeys[0]
     return transDict, geneDict, greatIso
 
+def toProteinString(proteinObject):
+    if len(proteinObject.symbol) > 0:
+        l = '>' + proteinObject.species + '_' + proteinObject.symbol + '_(' + proteinObject.refseq + ')' + '\n'
+    else:
+        l = '>' + proteinObject.species + '_' + 'GeneID' + str(proteinObject.gene)  + '_(' + proteinObject.refseq + ')' + '\n'
+    l = l.replace(' ', '_')
+    return l
+
 def createFastasForTrees(proteins, greatIso, filename):
     with open(os.path.join(rootFolder, 'Temp', 'bdc.txt'), 'w') as f:
         for s in greatIso:
@@ -673,11 +681,7 @@ def createFastasForTrees(proteins, greatIso, filename):
         for l in fastaLines:
             if l.startswith('>'):
                 r = l.split()[0][1:]
-                if len(proteins[r].symbol) > 0:
-                    l = '>' + proteins[r].species + '_' + proteins[r].symbol + '_(' + proteins[r].refseq + ')' + '\n'
-                else:
-                    l = '>' + proteins[r].species + '_' + 'GeneID' + str(proteins[r].gene)  + '_(' + proteins[r].refseq + ')' + '\n'
-                l = l.replace(' ', '_')
+                l = toProteinString(proteins[r])
             o.write(l)
 
 def findLargestMaxCliques(graph, mainGene):
@@ -728,13 +732,9 @@ def createGraph(mainGene, mainSpecies, proteins, geneDict, filename):
                 fastaDict[k] = ''
             else:
                 fastaDict[k] += l
-    with open(os.path.join(rootFolder, 'Results', os.path.splitext('max_clique')[0] + '.fasta'), 'w') as o:
+    with open(os.path.join(rootFolder, 'Results', os.path.splitext('joined_max_clique')[0] + '.fasta'), 'w') as o:
         for p in oneMaxClique:
-            if len(p.symbol) > 0:
-                k = '>' + p.species + '_' + p.symbol + '_(' + p.refseq + ')' + '\n'
-            else:
-                k = '>' + p.species + '_' + 'GeneID' + str(p.gene)  + '_(' + p.refseq + ')' + '\n'
-            k = k.replace(' ', '_')
+            k = toProteinString(p)
             if k in fastaDict:
                 o.write(k + fastaDict[k])
     return graph, maxCliques
@@ -1277,14 +1277,27 @@ def changeVisJS(filename):
         }
     };
 
+    function findValueByKeyFragment(dictionary, fragment) {
+        let result = null;
+
+        Object.keys(dictionary).forEach(key => {
+            if (key.includes(fragment)) {
+            result = key;
+            }
+        });
+
+        return result;
+    }
+
     function generateFasta() {
         var editLabels = document.getElementById("editNodes").value.split("\\n");
         var fastaString = '';
         var undefinedFlag = false;
         for (var i = 0; i < editLabels.length; i++) {
-            fastaString += '>' + editLabels[i] + '\\n';
-            fastaString += fasta[editLabels[i]] + '\\n';
-            if (fasta[editLabels[i]] === undefined) {
+            var neededKey = findValueByKeyFragment(fasta, editLabels[i])
+            fastaString += '>' + neededKey + '\\n';
+            fastaString += fasta[neededKey] + '\\n';
+            if (fasta[neededKey] === undefined) {
                 undefinedFlag = true;
             }
         }
