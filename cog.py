@@ -657,9 +657,9 @@ def createDictsForAnalysis(proteins, blastDict):
 
 def toProteinString(proteinObject):
     if len(proteinObject.symbol) > 0:
-        l = '>' + proteinObject.species + '_' + proteinObject.symbol + '_(' + proteinObject.refseq + ')' + '\n'
+        l = '>' + proteinObject.species + '_' + proteinObject.symbol + '_(refseq:' + proteinObject.refseq + ')' + '\n'
     else:
-        l = '>' + proteinObject.species + '_' + 'GeneID' + str(proteinObject.gene)  + '_(' + proteinObject.refseq + ')' + '\n'
+        l = '>' + proteinObject.species + '_' + 'GeneID' + str(proteinObject.gene)  + '_(refseq:' + proteinObject.refseq + ')' + '\n'
     l = l.replace(' ', '_')
     return l
 
@@ -849,6 +849,7 @@ def drawGraph(
     net.save_graph(os.path.join(rootFolder, 'Results', os.path.splitext(filename)[0] + '_pyvis.html'))
 
 def changeVisJS(filename):
+    keyDict = dict()
     with open(os.path.join(rootFolder, 'Results', os.path.splitext(filename)[0] + '_pyvis.html'), 'r') as f:
         htmlLines = f.readlines()
     with open(os.path.join(rootFolder, 'Results', os.path.splitext(filename)[0] + '.fasta'), 'r') as f:
@@ -857,11 +858,15 @@ def changeVisJS(filename):
     for l in fastaLines:
         if l.startswith('>'):
             currGene = l[1:].strip()
+            if currGene.count('_(refseq:') > 1:
+                raise Exception(f'Dont use "_(refseq:" in gene names (like in {currGene}')
+            keyDict[currGene.split('_(refseq:')[0]] = currGene
             fastaDict[currGene] = ''
         else:
             fastaDict[currGene] += l.strip()
     fastaJson = json.dumps(fastaDict)
     fastaJson = 'fasta = ' + fastaJson
+    keyJson = 'keyDict = ' + json.dumps(keyDict)
     commentString = [htmlL for htmlL in htmlLines if 'from the python' in htmlL][0]
     nodesString = [htmlL for htmlL in htmlLines if 'nodes = new vis.DataSet' in htmlL][0]
     edgesString = [htmlL for htmlL in htmlLines if 'edges = new vis.DataSet' in htmlL][0]
@@ -1277,24 +1282,12 @@ def changeVisJS(filename):
         }
     };
 
-    function findValueByKeyFragment(dictionary, fragment) {
-        let result = null;
-
-        Object.keys(dictionary).forEach(key => {
-            if (key.includes(fragment)) {
-            result = key;
-            }
-        });
-
-        return result;
-    }
-
     function generateFasta() {
         var editLabels = document.getElementById("editNodes").value.split("\\n");
         var fastaString = '';
         var undefinedFlag = false;
         for (var i = 0; i < editLabels.length; i++) {
-            var neededKey = findValueByKeyFragment(fasta, editLabels[i])
+            var neededKey = keyDict[editLabels[i]]
             fastaString += '>' + neededKey + '\\n';
             fastaString += fasta[neededKey] + '\\n';
             if (fasta[neededKey] === undefined) {
@@ -1487,6 +1480,7 @@ def changeVisJS(filename):
                 f.write(nodesString.replace('        ', '    '))
                 f.write(edgesString.replace('        ', '    '))
                 f.write('       ' + fastaJson + ';\n')
+                f.write('       ' + keyJson + ';\n')
             if '</body>' in l:
                 f.write('''
 <table cellspacing="20">
@@ -1816,8 +1810,8 @@ def runFinalAnalysis():
     '''
     filenameList = os.listdir(inputDir)
     if mergeInput:
-        mainFilename = int(input('Choose the main object of the study from the list:\n' + '\n'.join([str(i) + ':' + v for i, v in enumerate(filenameList)]) + '\n'))
-        mainFilename = filenameList[mainFilename]
+        # mainFilename = int(input('Choose the main object of the study from the list:\n' + '\n'.join([str(i) + ':' + v for i, v in enumerate(filenameList)]) + '\n'))
+        mainFilename = filenameList[0]
         filenameList = ['merged']
     for filename in filenameList:
         print(filename)
