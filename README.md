@@ -19,12 +19,12 @@ Carefully review, modify, and run the **cogcreatedb.ipynb** file to create your 
 
 ### Dependencies for the COG Analysis
 
-A dependencies.yml file is provided for installing the required dependencies:
+A **dependencies.yml** file is provided for installing the required dependencies. It is recommended to use this file with specified versions of packages:
 
 - [NetworkX](https://networkx.org/)
 - [Markov Clustering](https://github.com/guyallard/markov_clustering)
 - [Biopython](https://biopython.org/)
-- [Pyvis](https://pyvis.readthedocs.io/)
+- [Pyvis](https://pyvis.readthedocs.io/) (new versions of Pyvis might be laggy)
 - [BLAST Command-Line Applications](https://www.ncbi.nlm.nih.gov/books/NBK279690/)
 
 ### Running the Analysis
