@@ -1,8 +1,8 @@
 # Pavlov's COGs
 
-A program for building clusters of orthologous groups (COG) graphs.
+![image](https://github.com/user-attachments/assets/91d70ff8-9c29-4ec4-b508-27a63e49708d)
 
-![image](https://github.com/user-attachments/assets/d297e72d-f18b-4839-b810-1f6e52797b2c)
+A program for building clusters of orthologous groups (COG) graphs.
 
 ## Building the Database for Search
 
