@@ -1,30 +1,69 @@
 # Pavlov's COGs
-The database installation process is outlined in the cogcreatedb.ipynb file.
 
-Dependencies (database creation):
-- https://pandas.pydata.org/
-- https://www.ncbi.nlm.nih.gov/books/NBK179288/
-- https://www.ncbi.nlm.nih.gov/datasets/docs/v2/reference-docs/command-line/datasets/
-- https://www.ncbi.nlm.nih.gov/books/NBK279690/
+A program for building clusters of orthologous groups (COG) graphs.
 
-Dependencies (main agorithm, yml-file provided):
-- https://networkx.org/
-- https://github.com/guyallard/markov_clustering
-- https://biopython.org/
-- https://pyvis.readthedocs.io/
-- https://www.ncbi.nlm.nih.gov/books/NBK279690/
+## Building the Database for Search
 
-## Instructions
+The database installation process is outlined in the **cogcreatedb.ipynb** file.
 
-### Viewing the Results
+### Dependencies for Database Creation
+
+- [Pandas](https://pandas.pydata.org/)
+- [NCBI Entrez Programming Utilities](https://www.ncbi.nlm.nih.gov/books/NBK179288/)
+- [NCBI Datasets Command-Line Tools](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/reference-docs/command-line/datasets/)
+- [BLAST Command-Line Applications](https://www.ncbi.nlm.nih.gov/books/NBK279690/)
+
+Carefully review, modify, and run the **cogcreatedb.ipynb** file to create your BLAST database. By default, the script will create a database of eukaryotic RefSeq protein sequences from three organisms of each taxonomic class.
+
+## Running the COG Analysis
+
+### Dependencies for the COG Analysis
+
+A dependencies.yml file is provided for installing the required dependencies:
+
+- [NetworkX](https://networkx.org/)
+- [Markov Clustering](https://github.com/guyallard/markov_clustering)
+- [Biopython](https://biopython.org/)
+- [Pyvis](https://pyvis.readthedocs.io/)
+- [BLAST Command-Line Applications](https://www.ncbi.nlm.nih.gov/books/NBK279690/)
+
+### Running the Analysis
+
+The **cog.py** script performs the COG analysis. It requires two mandatory arguments:
+
+1. **Input file**: Contains identifiers of the queried sequences.
+2. **Output folder**: A desired empty folder for storing results.
+
+#### Additional Arguments
+
+- `-b/--init`, `-e/--eval`, and `-q/--qcov`: Specify the number of hits, E-value, and query coverage limits for the initial BLAST search.
+- `-t/--threadNum`: Number of threads to use.
+- `-o/--orthology`: Minimum fraction of best BLAST hits among gene isoforms required to establish orthology between two genes.
+- `-s/--stage`: Run a specific stage of the analysis:
+  - `1`: Initial BLAST search.
+  - `2`: Orthology analysis.
+  - `3`: Building the COG graph.
+- `-m/--merge`: Merge the resulting graphs into one (useful when studying a family of genes).
+- `-r/--removeXML`: Keep the (usually large) XML files of BLAST search results.
+- `-a/--algorithm`: Select the algorithm:
+  - `strict`: Uses all protein isoforms of a gene.
+  - `best`: Uses only the representative isoform (as in [OMA](https://doi.org/10.1093/nar/gkaa1007)).
+- `-g/--gravity`: Adjust the gravity constant, which affects the graph visualization.
+- `-c/--config`: Specify a custom configuration file containing:
+  - Paths to the table linking gene and organism identifiers.
+  - Taxonomy table.
+  - Name of the BLAST database to use.
+  - Paths to `blastp` and `blastdbcmd` utilities.
+
+## Viewing the Results
 
 After the COG analysis, a Pyvis HTML file is generated in the **Results** folder. Upon opening the file, a loading bar will appear. If the loading bar gets stuck at 0%, there may be an issue with your file.
 
-### Interface
+## Interface
 
 Once the file has loaded, a COG graph will appear at the top of the screen, and various submenus will be displayed at the bottom.
 
-#### COG Graph
+### COG Graph
 
 The COG graph consists of **nodes** representing genes, connected by **branches** that indicate orthology between two genes.
 
@@ -37,7 +76,7 @@ In standard mode:
 - Nodes in the largest maximal cliques containing the red nodes are colored **yellow**.
 - All other nodes are displayed in **dark blue (navy)**.
 
-#### Select Submenu
+### Select Submenu
 
 The **Select** submenu includes the following features:
 
@@ -50,21 +89,21 @@ The **Select** submenu includes the following features:
   - Markov clusters containing currently selected nodes
 - Click the **Select group** button to apply your selection. User-defined groups can also be added to the current selection using this dropdown menu.
 
-#### Editing Submenu
+### Editing Submenu
 
 The **Editing** submenu allows you to switch between two modes:
 
 1. **Painting Nodes**: Choose between coloring nodes based on the largest maximal cliques or Markov clustering. Select the desired mode and click the **Change colors** button to apply it.
 2. **Physics Toggle**: Use the **Physics** checkbox to enable or disable node physics.
 
-#### Textbox
+### Textbox
 
 - **Selected Genes**: Names of selected genes will appear in the textbox upon selection.
 - **Hide/Reveal Nodes**: Use the **Hide** button to hide selected nodes or the **Reveal** button to make them visible again.
 - **Color Customization**: Use the **Paint** option to color selected nodes. Enter the desired color in the **rgb(r,g,b)** input box (e.g., `rgb(255,0,0)` for red).
 - **User-Defined Groups**: Assign nodes to user-defined groups by typing the group name into the input box at the bottom. Click the **Assign group** button to save the group.
 
-#### Inspect Textbox Content
+### Inspect Textbox Content
 
 The textbox includes three buttons for further analysis:
 
