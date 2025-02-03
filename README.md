@@ -2,6 +2,8 @@
 
 A program for building clusters of orthologous groups (COG) graphs.
 
+![image](https://github.com/user-attachments/assets/d297e72d-f18b-4839-b810-1f6e52797b2c)
+
 ## Building the Database for Search
 
 The database installation process is outlined in the **cogcreatedb.ipynb** file.
