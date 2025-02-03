@@ -1,4 +1,4 @@
-# ortologi
+# Pavlov's COGs
 The database installation process is outlined in the cogcreatedb.ipynb file.
 
 Dependencies (database creation):
