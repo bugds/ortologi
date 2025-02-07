@@ -732,7 +732,7 @@ def createGraph(mainGene, mainSpecies, proteins, geneDict, filename):
                 fastaDict[k] = ''
             else:
                 fastaDict[k] += l
-    with open(os.path.join(rootFolder, 'Results', os.path.splitext('joined_max_clique')[0] + '.fasta'), 'w') as o:
+    with open(os.path.join(rootFolder, 'Results', os.path.splitext('joined_max_clique')[0] + os.path.splitext(filename)[0] + '.fasta'), 'w') as o:
         for p in oneMaxClique:
             k = toProteinString(p)
             if k in fastaDict:
