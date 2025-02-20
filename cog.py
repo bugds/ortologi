@@ -754,7 +754,7 @@ def drawGraph(
     filename,
     mainSpecies,
     springLength = 100,
-    commonColor = 'rgb(23,70,128)',
+    commonColor = "rgb(23,70,128)",
     mainColor = 'rgb(237,41,57)',
     maxColor = 'rgb(255,255,0)',
     voidColor = 'rgb(120,120,120)',
@@ -848,7 +848,7 @@ def drawGraph(
                 node['color'] = voidColor
     net.save_graph(os.path.join(rootFolder, 'Results', os.path.splitext(filename)[0] + '_pyvis.html'))
 
-def changeVisJS(filename):
+def changeVisJS(filename, commonColor = "rgb(23,70,128)"):
     keyDict = dict()
     with open(os.path.join(rootFolder, 'Results', os.path.splitext(filename)[0] + '_pyvis.html'), 'r') as f:
         htmlLines = f.readlines()
@@ -1164,6 +1164,33 @@ def changeVisJS(filename):
                     }
                 });
                 groupNodes = [...new Set(groupNodes.concat(markovCluster))];
+            }
+        } else if (group == 'selectClique') {
+            options = {
+                fields: ['id', 'font', 'color0'],
+                filter: function(item){
+                    return item.hidden == false;
+                }
+            };
+            var selectedNodes = nodes.get(network.getSelectedNodes(), options);
+            var groupNodes = selectedNodes;
+            for (var i = 0; i < selectedNodes.length; i++) {
+                if (selectedNodes[i].color0 !== "''' + commonColor + '''") {
+                    var connectedNodes = nodes.get(network.getConnectedNodes(selectedNodes[i].id), options);
+                    var nodesWithColor0 = nodes.get({
+                        fields: ['id', 'font', 'color0'],
+                        filter: function(item) {
+                            return (item.color0 !== "''' + commonColor + '''");
+                        }
+                    })
+                    var connectedNodeIds = new Set(
+                        connectedNodes.map(node => node.id)
+                    );
+                    var intersection = nodesWithColor0.filter(node =>
+                        connectedNodeIds.has(node.id)
+                    );
+                    groupNodes = [...new Set(groupNodes.concat(intersection))]
+                }
             }
         } else {
             groupNodes = additionalGroups[group];
@@ -1501,6 +1528,7 @@ def changeVisJS(filename):
           <option value="selectShown">Shown nodes</options>
           <option value="selectConnected">Connected nodes</options>
           <option value="selectMarkov">Markov cluster</options>
+          <option value="selectClique">Largest maximal clique</options>
         </select>
         <button id="selectGroupButton" type="button" onclick="return selectGroup()">Select group</button>
         </p>
@@ -1808,6 +1836,7 @@ def runFinalAnalysis():
     '''Run the forth step -
     analysis of Blast results
     '''
+    commonColor = "rgb(23,70,128)"
     filenameList = os.listdir(inputDir)
     if mergeInput:
         # mainFilename = int(input('Choose the main object of the study from the list:\n' + '\n'.join([str(i) + ':' + v for i, v in enumerate(filenameList)]) + '\n'))
@@ -1833,8 +1862,8 @@ def runFinalAnalysis():
         mainSpecies = proteins[mainRefseq].species
         mainGene = proteins[mainRefseq].gene
         graph, maxCliques = createGraph(mainGene, mainSpecies, proteins, geneDict, filename)
-        drawGraph(graph, maxCliques, proteins, filename, mainSpecies)
-        changeVisJS(filename)
+        drawGraph(graph, maxCliques, proteins, filename, mainSpecies, commonColor=commonColor)
+        changeVisJS(filename, commonColor=commonColor)
         maxCliques.sort()
         cliqueCounter = 0
         for maxClique in maxCliques:
