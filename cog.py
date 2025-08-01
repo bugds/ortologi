@@ -213,7 +213,8 @@ def bashBlast(
     out,
     outfmt='5',
     num_threads=numThreads,
-    max_target_seqs='500'):
+    max_target_seqs='500',
+    human=False):
     '''Run Blastp search
     :param query: File with query accession number
     :param out: Output file path
@@ -222,12 +223,27 @@ def bashBlast(
     :max_target_seqs: Number of target sequences
     :return: False if failed, True if succeded
     '''
-    if checkAccession(query) == False:
-        return False
+
+    if human:
+        subprocess.run([
+            'cp',
+            os.path.expanduser('~/.ncbirc_human'),
+            os.path.expanduser('~/.ncbirc')
+        ])
+        currDatabase = 'busco_refseq_human'
+    else:
+        currDatabase = databaseName
+        subprocess.run([
+            'cp',
+            os.path.expanduser('~/.ncbirc_all'),
+            os.path.expanduser('~/.ncbirc')
+        ])
+        if checkAccession(query) == False:
+            return False
 
     blastProcess = subprocess.run(
         [path2blastp,
-        '-db', databaseName,
+        '-db', currDatabase,
         '-query', query,
         '-outfmt', outfmt,
         '-out', out,
@@ -237,8 +253,9 @@ def bashBlast(
     )
 
     if blastProcess.stderr.decode():
-        print(blastProcess.stderr.decode())
-        return False
+        if not human:
+            print(blastProcess.stderr.decode())
+            return False
     return True
 
 def initialBlast(filename, query):
@@ -430,7 +447,7 @@ def blastSearch(query, speciesList, filename, blastDict):
     )
     if blastNotVoid:
         blast = SearchIO.parse(xmlPath, 'blast-xml')
-        writeInBlastDict(blast, blastDict)
+        blastDict = writeInBlastDict(blast, blastDict)
     os.remove(query)
     if removeXml:
         os.remove(xmlPath)
@@ -449,6 +466,58 @@ def clearProteins(proteins):
     for r in toDel:
         del proteins[r]
     return proteins
+
+def getOnlyMaxCliqueCandidates(proteins, filename, query):
+    '''Run reciprocal Blast to identify only those
+    genes that can contribute to the largest maximal
+    clique with the queried gene and filter out
+    all other genes'''
+    with open(filename, 'r') as oneStrFile:
+        mainRefseq = oneStrFile.read().replace('\n', '').strip()
+    for k in proteins.keys():
+        if k.split('.')[0] == mainRefseq:
+            mainRefseq = k
+    mainGene = proteins[mainRefseq].gene
+    mainIsoforms = [p for p in proteins if proteins[p].gene == mainGene]
+    xmlPath = os.path.join(rootFolder, 'Temp', 'reciprocal.xml')
+    getFastas = subprocess.run(
+        [blastdbcmd,
+        '-db', databaseName,
+        '-entry_batch', query,
+        '-out', os.path.join(rootFolder, 'Temp', 'query.fasta')],
+        stderr = subprocess.PIPE
+    )
+    blastNotVoid = bashBlast(
+        query=os.path.join(rootFolder, 'Temp', 'query.fasta'),
+        out=xmlPath,
+        max_target_seqs='1',
+        human=True
+    )
+    if blastNotVoid:
+        reciprocalDict = dict()
+        partName = os.path.join(rootFolder, 'Temp', 'reciprocal_pt.xml')
+        with open(xmlPath, 'r') as inp:
+            xmlLines = inp.read()
+            linesList = ['<?xml version=' + i for i in xmlLines.split('<?xml version=')[1:]]
+            for i in linesList:
+                with open(partName, 'w') as out:
+                    out.write(i)
+                blast = SearchIO.parse(partName, 'blast-xml')
+                reciprocalDict = writeInBlastDict(blast, reciprocalDict)
+        if set([len(reciprocalDict[i]) for i in reciprocalDict]) != {1}:
+            print('Occam option failed (reason 1), reverting...')
+            return proteins
+        newProteins = dict()
+        for r in reciprocalDict:
+            for s in reciprocalDict[r]:
+                if reciprocalDict[r][s] in mainIsoforms:
+                    newProteins[r] = proteins[r]
+    else:
+        print('Occam option failed (reason 2), reverting...')
+        return proteins
+    # if removeXml:
+    #     os.remove(xmlPath)
+    return newProteins
 
 def createBlastDict(proteins, filename):
     '''Run Blast algorithm to create dictionary based on its results
@@ -1828,6 +1897,11 @@ def runMainAnalysis():
         proteins = getIsoforms(proteins)
         proteins = getSpeciesName(proteins)
         proteins = clearProteins(proteins)
+        proteins = getOnlyMaxCliqueCandidates(
+            proteins,
+            os.path.join(inputDir, filename),
+            os.path.join(rootFolder, 'Input', filename)
+        )
         savePickle(os.path.splitext(filename)[0], proteins, 'Previous_Proteins')
         print(str(datetime.datetime.now()) + ': "proteins" ready')
         blastDict = createBlastDict(proteins, filename)
