@@ -1938,16 +1938,17 @@ def runFinalAnalysis():
         graph, maxCliques = createGraph(mainGene, mainSpecies, proteins, geneDict, filename)
         drawGraph(graph, maxCliques, proteins, filename, mainSpecies, commonColor=commonColor)
         changeVisJS(filename, commonColor=commonColor)
-        maxCliques.sort()
-        cliqueCounter = 0
-        for maxClique in maxCliques:
-            cliqueCounter += 1
-            for p in proteins:
-                proteins[p].good = False
-            proteins = goodGeneMakesGoodProtein(proteins, maxClique)
-            tempProteins = clearProteins2(proteins)
-            html = analyzeBlastDict(blastDict, tempProteins)
-            reportHtml(os.path.splitext(filename)[0] + '_clique' + str(cliqueCounter), maxClique, proteins, html)
+        # Do not see the following essential anymore:
+        # maxCliques.sort()
+        # cliqueCounter = 0
+        # for maxClique in maxCliques:
+        #     cliqueCounter += 1
+        #     for p in proteins:
+        #         proteins[p].good = False
+        #     proteins = goodGeneMakesGoodProtein(proteins, maxClique)
+        #     tempProteins = clearProteins2(proteins)
+        #     html = analyzeBlastDict(blastDict, tempProteins)
+        #     reportHtml(os.path.splitext(filename)[0] + '_clique' + str(cliqueCounter), maxClique, proteins, html)
 
 if __name__ == '__main__':
     print(str(datetime.datetime.now()) + ': start')
