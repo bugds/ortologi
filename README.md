@@ -2,6 +2,7 @@
 
 ![image](https://github.com/user-attachments/assets/91d70ff8-9c29-4ec4-b508-27a63e49708d)
 
+
 A program for building clusters of orthologous groups (COG) graphs.
 
 ## Building the Database for Search
@@ -112,3 +113,5 @@ The textbox includes three buttons for further analysis:
 1. **Get FASTA**: Retrieves sequences of representative isoforms for the selected genes.
 2. **Description (visible)**: Provides information on the connections and composition of Markov clusters for the visible selected nodes.
 3. **Build MSA**: Uses the EMBL-EBI Clustal Omega service to build a multiple sequence alignment (MSA) of the protein sequences of the selected nodes.
+
+![logo](https://github.com/user-attachments/assets/202daa3c-c674-469b-b0d8-71ff19722902)
