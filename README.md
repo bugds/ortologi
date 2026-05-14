@@ -114,4 +114,39 @@ The textbox includes three buttons for further analysis:
 2. **Description (visible)**: Provides information on the connections and composition of Markov clusters for the visible selected nodes.
 3. **Build MSA**: Uses the EMBL-EBI Clustal Omega service to build a multiple sequence alignment (MSA) of the protein sequences of the selected nodes.
 
+### Orthobench
+
+For using Orthobench as a benchmark the users must create a BLAST database from FASTA files included in Orthobench.
+
+Also, a suitable g2r.tsv file must be created, which includes assembly, protein accession number etc, e.g.:
+
+assembly	protein_accession.version	Symbol	GeneID	#tax_id
+Ciona_intestinalis.KH.pep.all.fa	ENSCINP00000022697	ENSCINP00000022697	ENSCINP00000022697	Ciona_intestinalis.KH.pep.all.fa
+Ciona_intestinalis.KH.pep.all.fa	ENSCINP00000034347	ENSCINP00000034347	ENSCINP00000034347	Ciona_intestinalis.KH.pep.all.fa
+
+The users also will have to use the following names.dmp file:
+
+Ciona_intestinalis.KH.pep.all.fa	.	Ciona_intestinalis.KH.pep.all.fa	.	.	.	scientific name
+Rattus_norvegicus.Rnor_6.0.pep.all.fa	.	Rattus_norvegicus.Rnor_6.0.pep.all.fa	.	.	.	scientific name
+Monodelphis_domestica.ASM229v1.pep.all.fa	.	Monodelphis_domestica.ASM229v1.pep.all.fa	.	.	.	scientific name
+Canis_familiaris.CanFam3.1.pep.all.fa	.	Canis_familiaris.CanFam3.1.pep.all.fa	.	.	.	scientific name
+Danio_rerio.GRCz11.pep.all.fa	.	Danio_rerio.GRCz11.pep.all.fa	.	.	.	scientific name
+Drosophila_melanogaster.BDGP6.28.pep.all.fa	.	Drosophila_melanogaster.BDGP6.28.pep.all.fa	.	.	.	scientific name
+Caenorhabditis_elegans.WBcel235.pep.all.fa	.	Caenorhabditis_elegans.WBcel235.pep.all.fa	.	.	.	scientific name
+Mus_musculus.GRCm38.pep.all.fa	.	Mus_musculus.GRCm38.pep.all.fa	.	.	.	scientific name
+Gallus_gallus.GRCg6a.pep.all.fa	.	Gallus_gallus.GRCg6a.pep.all.fa	.	.	.	scientific name
+Homo_sapiens.GRCh38.pep.all.fa	.	Homo_sapiens.GRCh38.pep.all.fa	.	.	.	scientific name
+Pan_troglodytes.Pan_tro_3.0.pep.all.fa	.	Pan_troglodytes.Pan_tro_3.0.pep.all.fa	.	.	.	scientific name
+Tetraodon_nigroviridis.TETRAODON8.pep.all.fa	.	Tetraodon_nigroviridis.TETRAODON8.pep.all.fa	.	.	.	scientific name
+
+In the cogconf.txt file, the users must provide the paths to g2r.tsv file and the dmp file:
+
+path2G2R:/home/user/g2r.tsv
+path2T2N:/home/user/names.dmp
+databaseName:orthobench
+path2blastp:/home/bioinfuser/miniconda3/envs/entrez/bin/blastp
+blastdbcmd:/home/bioinfuser/miniconda3/envs/entrez/bin/blastdbcmd
+
+Path to this cogconf.txt file must be provided under the "c" parameter in cog.py script.
+
 ![logo](https://github.com/user-attachments/assets/202daa3c-c674-469b-b0d8-71ff19722902)
