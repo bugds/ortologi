@@ -149,4 +149,6 @@ blastdbcmd:/home/bioinfuser/miniconda3/envs/entrez/bin/blastdbcmd
 
 Path to this cogconf.txt file must be provided under the "c" parameter in cog.py script.
 
+For the analysis with Orthobench or your own database consider using cog_ForOrthobench.py script instead of cog.py.
+
 ![logo](https://github.com/user-attachments/assets/202daa3c-c674-469b-b0d8-71ff19722902)
