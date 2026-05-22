@@ -1,6 +1,8 @@
 cogconf.txt
 refseq_proteomes*
 lib
+cog_both_strategies.py
+cog_no_clique.py
 .gitignore
 ._.DS_Store
 .DS_Store
