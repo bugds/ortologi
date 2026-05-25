@@ -179,11 +179,24 @@ def createInputForBlast(inp, filename):
     :param filename: Name of currently analyzed file
     :return: Path to the temporary file
     '''
-    with open('{}/Temp/{}{}'.format(rootFolder, filename, '.q'), 'w') as f:
+    with open('{}/Temp/{}{}'.format(rootFolder, filename, '.q'), 'wb') as f:
         if isinstance(inp, str):
-            f.write(inp)
+            searchResult = subprocess.run(
+                [blastdbcmd,
+                '-entry', inp,
+                '-db', databaseName],
+                stdout=subprocess.PIPE
+            )
+            f.write(searchResult.stdout)
         else:
-            f.write('\n'.join(inp))
+            for i in inp:
+                searchResult = subprocess.run(
+                    [blastdbcmd,
+                    '-entry', i,
+                    '-db', databaseName],
+                    stdout=subprocess.PIPE
+                )
+                f.write(searchResult.stdout)
     return '{}/Temp/{}{}'.format(rootFolder, filename, '.q')
 
 def checkAccession(
@@ -195,6 +208,15 @@ def checkAccession(
     '''
     with open(query, 'r') as inp:
         entry = inp.readline().strip()
+
+    try:
+        if len(entry) > 0:
+            if entry[0] == '>':
+                entry = entry[1:].split()[0]
+        else:
+            return False
+    except:
+        return False
 
     searchResult = subprocess.run(
         [blastdbcmd,
@@ -256,6 +278,7 @@ def initialBlast(filename, query):
         max_target_seqs=initBlastTargets
     )
     if not bashBlastBool:
+        print('No BLAST results')
         exit(1)
     return SearchIO.parse(xmlPath, 'blast-xml')
 
@@ -275,9 +298,13 @@ def parseInitialBlast(blast):
                     # can't just take hit.accession -
                     # does not have accession version
                     substrings = hit.id.split('|')
+                    successfullyAdded = False
                     for i in range(len(substrings)):
                         if substrings[i] == 'ref':
+                            successfullyAdded = True
                             initBlastList.append(substrings[i+1])
+                    if not successfullyAdded:
+                        initBlastList.append(hit.id)
     return initBlastList
 
 def checkPreviousPickle(filename, folder):
@@ -410,10 +437,27 @@ def writeInBlastDict(blast, blastDict):
             species = hit.description.split('[')[1].split(']')[0]
             if not species in blastDict[record.id]:
                 substrings = hit.id.split('|')
+                successfullyAdded = False
                 for i in range(len(substrings)):
                     if substrings[i] == 'ref':
+                        successfullyAdded = True
                         blastDict[record.id][species] = substrings[i+1]
+                if not successfullyAdded:
+                    blastDict[record.id][species] = hit.id
     return blastDict
+
+def get_records(filename):
+    with open(filename, 'r') as f:
+        block = []
+        for line in f:
+            if line != '\n':
+                block.append(line)
+                if '</BlastOutput>' in line:
+                    try:
+                        yield SearchIO.parse(StringIO("".join(block)), "blast-xml")
+                    except:
+                        print(block[0:2])
+                    block = []
 
 def blastSearch(query, speciesList, filename, blastDict):
     '''Run Blast, save results of a search to a file and return its contents
@@ -429,11 +473,12 @@ def blastSearch(query, speciesList, filename, blastDict):
         out=xmlPath,
     )
     if blastNotVoid:
-        blast = SearchIO.parse(xmlPath, 'blast-xml')
-        writeInBlastDict(blast, blastDict)
+        for blast in get_records(xmlPath):
+            writeInBlastDict(blast, blastDict)
     os.remove(query)
     if removeXml:
-        os.remove(xmlPath)
+        if os.path.exists(xmlPath):
+            os.remove(xmlPath)
     return blastDict
 
 def clearProteins(proteins):
