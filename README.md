@@ -149,4 +149,6 @@ blastdbcmd:/home/bioinfuser/miniconda3/envs/entrez/bin/blastdbcmd
 
 Path to this cogconf.txt file must be provided under the "c" parameter in cog.py script.
 
+NB: Use at least genes from reference orthogroups as queries, provide additional identifiers for covering at least 50% of sequences.
+
 ![logo](https://github.com/user-attachments/assets/202daa3c-c674-469b-b0d8-71ff19722902)
