@@ -764,8 +764,6 @@ def createGraph(mainGene, mainSpecies, proteins, geneDict, filename):
                     graph.add_edge(q, t)
     if networkx.is_isolate(graph, mainGene):
         print('Main gene is an isolate!!!')
-    else:
-        graph.remove_nodes_from(list(networkx.isolates(graph)))
     maxCliques = findLargestMaxCliques(graph, mainGene)
     oneMaxClique = set(p for p in proteins.values() if p.gene in set().union(*maxCliques))
     with open(os.path.join(rootFolder, 'Results', os.path.splitext(filename)[0] + '.fasta'), 'r') as inp:
@@ -845,10 +843,14 @@ def drawGraph(
         for j in clusters[i]:
             if paletteNum < len(palette):
                 paletteDict[nodesDict[j]] = palette[i]
+    to_hide = list(networkx.isolates(graph))
     for node in net.nodes:
         node['title'] = node['label']
         node['physics'] = True
-        node['hidden'] = False
+        if node['label'] in to_hide:
+            node['hidden'] = True
+        else:
+            node['hidden'] = False
         connectionsDict[node['title']] = 0
         for i in range(0, len(clusters)):
             for j in clusters[i]:
