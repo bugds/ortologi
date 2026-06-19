@@ -743,10 +743,10 @@ def findLargestMaxCliques(graph, mainGene):
                 maxCliques.append(c)
     return maxCliques
 
-def createGraph(mainGene, mainSpecies, proteins, geneDict, filename):
+def createGraph(mainGene, greatIso, proteins, geneDict, filename):
     '''Create graph
     :param mainGene: Gene of query
-    :param mainSpecies: Species of query
+    :param greatIso: Best isoforms
     :param proteins: Dictionary for storing information about proteins
     :param geneDict: Dictionary of genes according to Blast results
     :return: Graph representating Blast results
@@ -762,6 +762,12 @@ def createGraph(mainGene, mainSpecies, proteins, geneDict, filename):
             if (tSpecies in geneDict[q]) and (qSpecies in geneDict[t]):
                 if (q != t) and (geneDict[q][tSpecies] == t) and (geneDict[t][qSpecies] == q):
                     graph.add_edge(q, t)
+    # Adding isolates:
+    for s in greatIso:
+        for g in greatIso:
+            if not (g in graph):
+                if g in [p.gene for p in proteins.values()]:
+                    graph.add_node(g)
     if networkx.is_isolate(graph, mainGene):
         print('Main gene is an isolate!!!')
     maxCliques = findLargestMaxCliques(graph, mainGene)
@@ -1908,7 +1914,7 @@ def runFinalAnalysis():
                 mainRefseq = k
         mainSpecies = proteins[mainRefseq].species
         mainGene = proteins[mainRefseq].gene
-        graph, maxCliques = createGraph(mainGene, mainSpecies, proteins, geneDict, filename)
+        graph, maxCliques = createGraph(mainGene, greatIso, proteins, geneDict, filename)
         drawGraph(graph, maxCliques, proteins, filename, mainSpecies, commonColor=commonColor)
         changeVisJS(filename, commonColor=commonColor)
         maxCliques.sort()
